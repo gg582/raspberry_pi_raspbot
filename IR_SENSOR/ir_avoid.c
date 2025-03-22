@@ -1,7 +1,6 @@
 #include<linux/module.h>
 #include<linux/string.h>
 #include<linux/init.h>
-#include<linux/module.h>
 #include<linux/cdev.h>
 #include<linux/gpio.h>
 #include<linux/device.h>
@@ -11,7 +10,7 @@
 #define L_AVOID 521
 #define R_AVOID 522
 
-dev_t dev = 0;
+dev_t dev;
 
 static struct class *ir_class;
 static struct cdev ir_cdev;
@@ -68,19 +67,20 @@ static ssize_t ir_read(struct file *file, char __user *buf, size_t len, loff_t *
 	else {
 		sprintf(cur,"LEFT");
 	}
-	int err = copy_to_user(buf,cur,6);
+	int err = copy_to_user(buf,cur, strlen(cur)+1);
 	if(err>0) {
 		_printk("not all the bytes has been copied. failed : %d bytes",err );
+        return -EFAULT;
 	}
 		
-	return 6;
+	return strlen(cur) + 1;
 }
 
 
 	
 static ssize_t ir_on_off(struct file *file, const char *buf, size_t len, loff_t *off) {
-	char status[4];
-	int err = copy_from_user(status, buf, 4);
+	char status[5];
+	int err = copy_from_user(status, buf, 5);
 	_printk("status string is %s, right?\n",status);
 	if(err>0) {
 		_printk("not all the bytes has been copied. failed : %d bytes", err);
@@ -91,8 +91,9 @@ static ssize_t ir_on_off(struct file *file, const char *buf, size_t len, loff_t 
 		gpio_set_value(ON_AVOID,0);
 	} else {
 		_printk("ERROR: Unknown command, select between ON/OFF\n");
+        return -EFAULT;
 	}
-	return 4;
+	return strlen(status) + 1;
 }
 
 static int __init ir_driver_init(void) {

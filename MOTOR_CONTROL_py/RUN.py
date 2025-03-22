@@ -84,7 +84,7 @@ def main():
             print(ir_data.decode())
         else:
             print("IR data unavailable")
-        time.sleep(0.00005)
+        time.sleep(0.005)
     car.Car_Stop()
 #    sock.close()
 
