@@ -1,2 +1,2 @@
 #!/bin/bash
-apt-get install openssl mokutil build-essential
+apt-get install openssl build-essential
