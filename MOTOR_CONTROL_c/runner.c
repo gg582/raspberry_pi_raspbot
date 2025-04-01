@@ -55,7 +55,7 @@ int main ()
             io.buf[2] = io.buf[4] = dist / 2 + dist / 4; 
             
         } else {
-            io.buf[2] = io.buf[4] = 30;
+            io.buf[2] = io.buf[4] = 60;
         }
         printf("distance is %d\n", dist);
 recheck:
@@ -104,21 +104,10 @@ recheck:
                 }
             }
         } else {
-                io.buf[1] = 1;
-                io.buf[3] = 1;
-                ioctl(motor, PI_CMD_IO, &io);
+            io.buf[1] = 1;
+            io.buf[3] = 1;
+            ioctl(motor, PI_CMD_IO, &io);
             printf("forward --> (%u)\n", dist);
-            if (ir_flag[0] == 'R') {
-                io.buf[1] = 1;
-                io.buf[3] = 0;
-                ioctl(motor, PI_CMD_IO, &io);
-                printf("left --> (%u)\n", dist);
-                while(dist < AVOID_DIST) {
-                    read (sr04, buf, 8);
-                    dist = atoi(buf);
-                    goto recheck;
-                }
-            }
         }
 	usleep(ONE_MILI_SEC * SLEEP_TIME);
     }
