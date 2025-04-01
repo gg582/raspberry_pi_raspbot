@@ -17,15 +17,13 @@ data and predefined logic.
   - Adjusts motor speed based on distance from obstacles
   - Handles directional control using sensor inputs
 
-- **User-Friendly Interface**:
-  - Supports both automatic and manual driving modes
-  - Easy-to-use command line interface for operation
+- **Automatic Controller**:
+  - Supports both automatic and driving mode
 
 ## Setup Instructions
 ### Required Hardware
 - Yahboom Raspbot AI Vision Robot Car (Raspberry Pi 4 version)
 - GPIO pins configured according to the robot's hardware specifications
-- FPV camera module
 
 ### Software Requirements
 - Raspberry Pi OS
@@ -53,7 +51,8 @@ The motor control system operates based on the following logic:
 
 Example command:
 ```bash
-python motor_controller.py --mode auto
+cd MOTOR_CONTROL_c
+./runner
 ```
 
 ## Known Issues
