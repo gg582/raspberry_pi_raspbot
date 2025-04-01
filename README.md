@@ -27,7 +27,7 @@ data and predefined logic.
 
 ### Software Requirements
 - Raspberry Pi OS
-- Python or C programming language for implementation
+- C programming language for implementation
 - Necessary libraries for GPIO control and sensor input processing
 
 ## Motor Control Logic Overview
