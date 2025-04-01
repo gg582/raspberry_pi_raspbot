@@ -1,1 +1,8 @@
 GPIO Pin Number check : /sys/kernel/debug/gpio
+
+Yahboom model:
+Raspbot AI Vision Robot Car with FPV camera for RPi4 (Old model)
+this model usually has hw misfunction in left infrared
+trust the right infrared, not the left
+
+

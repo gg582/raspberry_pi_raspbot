@@ -220,7 +220,7 @@ static void Forward(void)
 }
 
 static void ForwardSlow(void) {
-	motor_write(FORWARD_SLOW, 5);
+    motor_write(FORWARD_SLOW, 5);
 }
 
 static void Backward(void)
@@ -267,9 +267,19 @@ static long chardevIoctl(struct file * file, unsigned int command, unsigned long
         Backward();
         printk(KERN_INFO "COMMAND: backward");
         break;
-    case PI_CMD_STOP    :
+    case PI_CMD_STOP :
         Stop();
         printk(KERN_INFO "COMMAND: stop");
+        break;
+    case PI_CMD_IO :
+        struct ioctl_info info;
+        int ret = copy_from_user(&info, (struct ioctl_info *)arg, sizeof(info));
+        printk(KERN_INFO "COMMAND: io");
+        if (ret < 0) {
+            Stop();
+        } else {
+            motor_write(info.buf, 5);
+        }
         break;
     }
     return command;

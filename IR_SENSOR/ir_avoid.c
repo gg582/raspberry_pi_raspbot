@@ -53,19 +53,19 @@ static ssize_t ir_read(struct file *file, char __user *buf, size_t len, loff_t *
 	/************************
 	 *	L | R           *
 	 *	1 | 1 => NONE   *
-	 *	0 | 0 => BOTH   *
-	 *      0 | 1 => RIGHT  *
+	 *	0 | 0 => RIGHT  *  ir sensor is incorrect. 
+	 *  0 | 1 => RIGHT  *
 	 *	1 | 0 => LEFT   *
 	 ***********************/
 	if(gpio_state_left && gpio_state_right) {
-		sprintf(cur,"BOTH");
+		sprintf(cur,"NONE");
 	} else if (!(gpio_state_left^gpio_state_right)) {
-		sprintf(cur, "NONE");
-	} else if(!gpio_state_left) {
 		sprintf(cur, "RIGHT");
+	} else if(gpio_state_right) {
+		sprintf(cur, "LEFT");
 	}
 	else {
-		sprintf(cur,"LEFT");
+		sprintf(cur,"RIGHT");
 	}
 	int err = copy_to_user(buf,cur, strlen(cur)+1);
 	if(err>0) {
@@ -86,9 +86,9 @@ static ssize_t ir_on_off(struct file *file, const char *buf, size_t len, loff_t 
 		_printk("not all the bytes has been copied. failed : %d bytes", err);
 	}
 	if(!strncmp(status,"ON",2)) {
-		gpio_set_value(ON_AVOID,0);
-	} else if (!strncmp(status, "OFF",3)) {
 		gpio_set_value(ON_AVOID,1);
+	} else if (!strncmp(status, "OFF",3)) {
+		gpio_set_value(ON_AVOID,0);
 	} else {
 		_printk("ERROR: Unknown command, select between ON/OFF\n");
         return -EFAULT;
@@ -145,7 +145,7 @@ static int __init ir_driver_init(void) {
 		_printk("R_AVOID is not valid\n");
 		goto _err_gpio_r;
 	}
-	gpio_direction_output(ON_AVOID,0);
+	gpio_direction_output(ON_AVOID,1);
 	gpio_direction_input(L_AVOID);
 	gpio_direction_input(R_AVOID);
 	return 0;

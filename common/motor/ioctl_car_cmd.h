@@ -5,7 +5,7 @@
 
 struct ioctl_info {
     unsigned long size;
-    char buf[128];
+    char buf[5];
 };
 
 enum {
@@ -15,7 +15,7 @@ enum {
     CMD_FORWARD_SLOW,
     CMD_BACKWARD,
     CMD_STOP,
-    CMD_GARBAGE,
+    CMD_IO,
 };
 
 #define			IOCTL_MAGIC     'G'
@@ -26,6 +26,6 @@ enum {
 #define			PI_CMD_FORWARD_SLOW		_IOW(IOCTL_MAGIC, CMD_FORWARD_SLOW,  struct ioctl_info)
 #define			PI_CMD_BACKWARD		_IOW(IOCTL_MAGIC, CMD_BACKWARD, struct ioctl_info)
 #define			PI_CMD_STOP		_IOW(IOCTL_MAGIC, CMD_STOP,	struct ioctl_info)
-#define			PI_CMD_GARBAGE		_IOW(IOCTL_MAGIC, CMD_GARBAGE,	struct ioctl_info)
+#define			PI_CMD_IO		_IOW(IOCTL_MAGIC, CMD_IO,	struct ioctl_info)
 
 #endif
