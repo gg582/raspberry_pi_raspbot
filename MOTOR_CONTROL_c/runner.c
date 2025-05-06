@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
 #include <stdbool.h>
 #include <sys/time.h>
 #include <signal.h>
@@ -11,9 +12,9 @@
 #define SR04 "/dev/sr04"
 #define IR "/dev/ir_device"
 #include "../common/motor/ioctl_car_cmd.h"
-#define AVOID_DIST 50
+#define AVOID_DIST 70
 #define DIST_MAX   300
-#define BACK_DIST  10
+#define BACK_DIST  5
 #define MOVE_TIME         1
 #define SLEEP_TIME        60
 #define ONE_MILI_SEC      1000
@@ -36,6 +37,7 @@ int main ()
     ir = open (IR, O_RDWR);
     sr04 = open (SR04, O_RDWR);
     signal (SIGINT, sigHandler);
+    srand(time(NULL));
     while (true) {
         prev_dist = dist;
         char buf[8];
@@ -58,7 +60,6 @@ int main ()
             io.buf[2] = io.buf[4] = 60;
         }
         printf("distance is %d\n", dist);
-recheck:
         if (dist < AVOID_DIST) {
             if (dist < BACK_DIST) {
                 io.buf[1] = 0;
@@ -68,7 +69,6 @@ recheck:
                 while(dist < BACK_DIST) {
                     read (sr04, buf, 8);
                     dist = atoi(buf);
-                    goto recheck;
                 }
             } else if (ir_flag[0] == 'L') {
                 io.buf[1] = 0;
@@ -78,7 +78,6 @@ recheck:
                 while(dist < AVOID_DIST) {
                     read (sr04, buf, 8);
                     dist = atoi(buf);
-                    goto recheck;
                 }
             } else if (ir_flag[0] == 'R') {
                 io.buf[1] = 1;
@@ -88,19 +87,22 @@ recheck:
                 while(dist < AVOID_DIST) {
                     read (sr04, buf, 8);
                     dist = atoi(buf);
-                    goto recheck;
                 }
-            } else if (!dist) {
+           } else if (!dist) {
                 ioctl(motor, PI_CMD_STOP, sizeof(struct ioctl_info));
             } else {
-                io.buf[1] = 0;
-                io.buf[3] = 1;
+                if(rand()%2) {
+                    io.buf[1] = 0;
+                    io.buf[3] = 1;
+                } else {
+                    io.buf[1] = 1;
+                    io.buf[3] = 0;
+                }
                 ioctl(motor, PI_CMD_IO, &io);
                 printf("left (predefined) --> (%u)\n", dist);
                 while(dist < AVOID_DIST) {
                     read (sr04, buf, 8);
                     dist = atoi(buf);
-                    goto recheck;
                 }
             }
         } else {

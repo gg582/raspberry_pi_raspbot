@@ -16,7 +16,7 @@ int main ()
     if ( dev < 0 ) exit (1);
 
     struct ioctl_info test = {
-        .buf = { 0x01, 0x50, 0x01, 0x00, 0x50 },
+        .buf = { 0x01, 0x00, 0x00, 0x00, 0x00 },
         .size = 5
     };
     ioctl ( dev, PI_CMD_IO, &test) ;

@@ -83,7 +83,6 @@ static ssize_t ir_on_off(struct file *file, const char *buf, size_t len, loff_t 
 	int err = copy_from_user(status, buf, 5);
 	_printk("status string is %s, right?\n",status);
 	if(err>0) {
-		_printk("not all the bytes has been copied. failed : %d bytes", err);
 	}
 	if(!strncmp(status,"ON",2)) {
 		gpio_set_value(ON_AVOID,1);
