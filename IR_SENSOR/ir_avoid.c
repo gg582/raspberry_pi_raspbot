@@ -50,13 +50,13 @@ static ssize_t ir_read(struct file *file, char __user *buf, size_t len, loff_t *
 	// CAUTION : ( 1 : no blue light, 0: blue light is on )
 
 
-	/************************
+	/********************
 	 *	L | R           *
 	 *	1 | 1 => NONE   *
-	 *	0 | 0 => RIGHT  *  ir sensor is incorrect. 
-	 *  0 | 1 => RIGHT  *
-	 *	1 | 0 => LEFT   *
-	 ***********************/
+	 *	0 | 0 => BOTH   *  ir sensor is incorrect. 
+	 *  1 | 0 => RIGHT  *
+	 *	0 | 1 => LEFT   *
+	 ********************/
 	if(gpio_state_left && gpio_state_right) {
 		sprintf(cur,"NONE");
 	} else if (!(gpio_state_left^gpio_state_right)) {
@@ -65,7 +65,7 @@ static ssize_t ir_read(struct file *file, char __user *buf, size_t len, loff_t *
 		sprintf(cur, "LEFT");
 	}
 	else {
-		sprintf(cur,"RIGHT");
+		sprintf(cur,"BOTH");
 	}
 	int err = copy_to_user(buf,cur, strlen(cur)+1);
 	if(err>0) {
