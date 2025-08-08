@@ -15,10 +15,10 @@
 #define TRIG_LABEL "GPIO_23"
 static wait_queue_head_t waitqueue; //waitqueue for wait and wakeup
 
+dev_t dev = 0; // device driver's major/minor number
+
 int IRQ_NO; //variabe for storing echo pin irq
 _Bool echo_status; //for checking ECHO pin status, needed for identifying RISING/FALLING
-dev_t dev = 0;
-
 uint64_t sr04_send_ts, sr04_recv_ts, duration;
 /* start of IRQ Handler */
 
