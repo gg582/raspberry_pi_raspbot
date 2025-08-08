@@ -1,5 +1,4 @@
 #include<linux/init.h>
-#include<linux/delay.h>
 #include<linux/workqueue.h>
 #include<linux/module.h>
 #include<linux/wait.h>
@@ -31,7 +30,7 @@ static irqreturn_t echo_irq_triggered(int irq, void *dev_id) {
 		_printk("SUCCEED TO GET sr04_recv_ts%llu\n", sr04_recv_ts);
 		sr04_recv_ts = ktime_get_ns();
 		duration = sr04_recv_ts-sr04_send_ts;
-		wake_up_interruptible(&waitqueue);
+		wake_up_interruptible(&waitqueue); // interrupt wake up
 	}
 		
 	return IRQ_HANDLED;
@@ -121,7 +120,7 @@ static int __init sr04_driver_init(void) {
 
 	gpio_direction_output(TRIG,0);
 	gpio_direction_input(ECHO);
-	init_waitqueue_head(&waitqueue);
+	init_waitqueue_head(&waitqueue); // waitqueue init
 	_printk("SR04 Dev. Driver inserted.");
 	return 0;
 
