@@ -193,6 +193,6 @@ module_init(ir_driver_init);
 module_exit(ir_driver_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Yunjin Lee <gzblues61@gmail.com>");
+MODULE_AUTHOR("Yunjin Lee <gzblues61@daum.net>");
 MODULE_VERSION("0.01");
 

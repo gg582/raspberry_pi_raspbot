@@ -178,7 +178,7 @@ ssize_t sr04_read(struct file *file, char __user *buf, size_t len, loff_t * off)
 module_init(sr04_driver_init);
 module_exit(sr04_driver_exit);
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Yunjin Lee <gzblues61@gmail.com>");
+MODULE_AUTHOR("Yunjin Lee <gzblues61@daum.net>");
 MODULE_DESCRIPTION("HC-SR04");
 MODULE_VERSION("0.01");
 
