@@ -5,9 +5,19 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "libttak/math/fx.h"
+#include "libttak/mem/arena.h"
+
 // Maximum numbers of neurons and synapses supported
 #define MAX_NEURONS 300
 #define MAX_SYNAPSES 10000
+
+// Common neuron indices
+#define SENSOR_NEURON_DIST_IDX 0
+#define SENSOR_NEURON_HOST_L_IDX 1
+#define SENSOR_NEURON_HOST_R_IDX 2
+#define MOTOR_NEURON_L_IDX 78
+#define MOTOR_NEURON_R_IDX 79
 
 // Enumeration for neuron types
 typedef enum {
@@ -25,8 +35,8 @@ typedef enum {
 
 // Neuron data structure
 typedef struct {
-    float activation;
-    float previous_activation; // Added for short-term memory
+    ttak_fx_t activation_fx;
+    ttak_fx_t previous_activation_fx;
     NeuronType_t type;
     char name[32];
 } Neuron_t;
@@ -35,9 +45,10 @@ typedef struct {
 typedef struct {
     int from;
     int to;
-    float weight;
-    float synaptic_strength;
-    float neurotransmitter_type; // 1.0 Dopamine, -1.0 Serotonin
+    ttak_fx_t weight_fx;
+    ttak_fx_t synaptic_strength_fx;
+    ttak_fx_t neurotransmitter_type_fx; // 1.0 Dopamine, -1.0 Serotonin
+    ttak_fx_t eligibility_trace_fx;
     SynapseType_t type;
 } Synapse_t;
 
@@ -61,6 +72,7 @@ extern float endorphin_level;
 extern float oxytocin_level;
 extern float cortisol_level;
 extern float stability_level; // NEW: Added for behavioral stability
+extern float atp_level;
 
 /*
  * Initializes the synapses with a biological structure
@@ -70,19 +82,19 @@ void init_synapses_biological(void);
 /*
  * Initializes neural network neurons and synapses
  */
-void NeuralNet_init(void);
+void NeuralNet_init(ttak_arena_t* arena);
 
 /*
  * Performs one neural network step:
  * - sensory_input: input array for sensory neurons
  * - motor_output: output array to be filled with motor neuron activations
  */
-void NeuralNet_step(float* sensory_input, float* motor_output);
+void NeuralNet_step(const float* sensory_input, float* motor_output);
 
 /*
  * Loads the neural network state from a file.
  */
-void NeuralNet_load(const char* filename);
+void NeuralNet_load(const char* filename, ttak_arena_t* arena);
 
 /*
  * Saves the neural network state to a file.

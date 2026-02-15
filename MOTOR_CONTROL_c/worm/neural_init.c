@@ -1,5 +1,6 @@
 #include "neuron.h"
-#include <stdlib.h>
+#include <math.h>
+#include <stdint.h>
 #include <string.h>
 
 /*
@@ -46,7 +47,24 @@ Synapse_t neural_synapses[MAX_SYNAPSES];
 const size_t NUM_NEURONS_INIT = 80;
 size_t NUM_SYNAPSES_INIT = 0;
 
+static uint32_t init_seed = 0x6d2b79f5u;
+
+static float init_rand_unit(void) {
+    init_seed = init_seed * 1664525u + 1013904223u;
+    return (float)(init_seed & 0x00FFFFFFu) / (float)0x01000000u;
+}
+
+static float init_rand_range(float min, float max) {
+    return min + (max - min) * init_rand_unit();
+}
+
+static float init_rand_signed(float magnitude) {
+    return (init_rand_unit() * 2.0f - 1.0f) * magnitude;
+}
+
 void init_synapses_biological(void) {
+    NUM_SYNAPSES_INIT = 0;
+
     // Sensory Neurons
     const int SENSORY_DIST = 0;
     const int SENSORY_HOST_L = 1;
@@ -68,33 +86,68 @@ void init_synapses_biological(void) {
 
     // 1. Host Signal -> Inter Neurons (Goal-Oriented)
     for (int i = INTER_H_EX_START; i <= INTER_H_EX_END; i++) {
-        float random_weight = ((float)rand() / (float)RAND_MAX) - 0.5f;
-        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){SENSORY_HOST_L, i, random_weight, 1.0f, 1.0f, SYNAPSE_TYPE_NORMAL};
-        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){SENSORY_HOST_R, i, random_weight, 1.0f, 1.0f, SYNAPSE_TYPE_NORMAL};
+        float random_weight = init_rand_signed(0.5f);
+        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+            .from = SENSORY_HOST_L,
+            .to = i,
+            .weight_fx = ttak_fx_from_float(random_weight),
+            .synaptic_strength_fx = TTAK_FX_ONE,
+            .neurotransmitter_type_fx = ttak_fx_from_float(1.0f),
+            .eligibility_trace_fx = 0,
+            .type = SYNAPSE_TYPE_NORMAL};
+        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+            .from = SENSORY_HOST_R,
+            .to = i,
+            .weight_fx = ttak_fx_from_float(random_weight),
+            .synaptic_strength_fx = TTAK_FX_ONE,
+            .neurotransmitter_type_fx = ttak_fx_from_float(1.0f),
+            .eligibility_trace_fx = 0,
+            .type = SYNAPSE_TYPE_NORMAL};
     }
 
     // 2. Avoidance Signal -> Inter Neurons (Reactive)
     for (int i = INTER_A_EX_START; i <= INTER_A_EX_END; i++) {
-        float random_weight = ((float)rand() / (float)RAND_MAX) - 0.5f;
-        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){SENSORY_DIST, i, random_weight, 1.0f, -1.0f, SYNAPSE_TYPE_NORMAL};
+        float random_weight = init_rand_signed(0.5f);
+        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+            .from = SENSORY_DIST,
+            .to = i,
+            .weight_fx = ttak_fx_from_float(random_weight),
+            .synaptic_strength_fx = TTAK_FX_ONE,
+            .neurotransmitter_type_fx = ttak_fx_from_float(-1.0f),
+            .eligibility_trace_fx = 0,
+            .type = SYNAPSE_TYPE_NORMAL};
     }
 
     // 3. Inter -> Inter (Local Circuits)
     // Host Excitatory -> Host Inhibitory
     for (int i = INTER_H_EX_START; i <= INTER_H_EX_END; i++) {
         for (int j = INTER_H_IN_START; j <= INTER_H_IN_END; j++) {
-            if (rand() % 5 == 0) { // 20% connection probability
-                float random_weight = -(((float)rand() / (float)RAND_MAX) * 0.5f);
-                neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){i, j, random_weight, 1.0f, -1.0f, SYNAPSE_TYPE_NORMAL};
+            if ((int)(init_rand_unit() * 5.0f) == 0) { // 20% connection probability
+                float random_weight = -fabsf(init_rand_signed(0.5f));
+                neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+                    .from = i,
+                    .to = j,
+                    .weight_fx = ttak_fx_from_float(random_weight),
+                    .synaptic_strength_fx = TTAK_FX_ONE,
+                    .neurotransmitter_type_fx = ttak_fx_from_float(-1.0f),
+                    .eligibility_trace_fx = 0,
+                    .type = SYNAPSE_TYPE_NORMAL};
             }
         }
     }
     // Avoidance Excitatory -> Avoidance Inhibitory
     for (int i = INTER_A_EX_START; i <= INTER_A_EX_END; i++) {
         for (int j = INTER_A_IN_START; j <= INTER_A_IN_END; j++) {
-            if (rand() % 5 == 0) {
-                float random_weight = -(((float)rand() / (float)RAND_MAX) * 0.5f);
-                neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){i, j, random_weight, 1.0f, -1.0f, SYNAPSE_TYPE_NORMAL};
+            if ((int)(init_rand_unit() * 5.0f) == 0) {
+                float random_weight = -fabsf(init_rand_signed(0.5f));
+                neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+                    .from = i,
+                    .to = j,
+                    .weight_fx = ttak_fx_from_float(random_weight),
+                    .synaptic_strength_fx = TTAK_FX_ONE,
+                    .neurotransmitter_type_fx = ttak_fx_from_float(-1.0f),
+                    .eligibility_trace_fx = 0,
+                    .type = SYNAPSE_TYPE_NORMAL};
             }
         }
     }
@@ -102,18 +155,60 @@ void init_synapses_biological(void) {
     // 4. Inter -> Motor Neurons (Goal vs. Avoidance)
     // Host Interneurons -> Motor Neurons (Excitatory to move forward)
     for (int i = INTER_H_EX_START; i <= INTER_H_EX_END; i++) {
-        float random_weight = ((float)rand() / (float)RAND_MAX) * 0.2f;
-        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){i, MOTOR_L, random_weight, 1.0f, 1.0f, SYNAPSE_TYPE_NORMAL};
-        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){i, MOTOR_R, random_weight, 1.0f, 1.0f, SYNAPSE_TYPE_NORMAL};
+        float random_weight = init_rand_range(0.0f, 0.2f);
+        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+            .from = i,
+            .to = MOTOR_L,
+            .weight_fx = ttak_fx_from_float(random_weight),
+            .synaptic_strength_fx = TTAK_FX_ONE,
+            .neurotransmitter_type_fx = ttak_fx_from_float(1.0f),
+            .eligibility_trace_fx = 0,
+            .type = SYNAPSE_TYPE_NORMAL};
+        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+            .from = i,
+            .to = MOTOR_R,
+            .weight_fx = ttak_fx_from_float(random_weight),
+            .synaptic_strength_fx = TTAK_FX_ONE,
+            .neurotransmitter_type_fx = ttak_fx_from_float(1.0f),
+            .eligibility_trace_fx = 0,
+            .type = SYNAPSE_TYPE_NORMAL};
     }
     // Avoidance Interneurons -> Motor Neurons (Inhibitory to stop/turn)
     for (int i = INTER_A_EX_START; i <= INTER_A_EX_END; i++) {
-        float random_weight = -(((float)rand() / (float)RAND_MAX) * 0.2f);
-        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){i, MOTOR_L, random_weight, 1.0f, -1.0f, SYNAPSE_TYPE_NORMAL};
-        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){i, MOTOR_R, random_weight, 1.0f, -1.0f, SYNAPSE_TYPE_NORMAL};
+        float random_weight = -fabsf(init_rand_range(0.0f, 0.2f));
+        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+            .from = i,
+            .to = MOTOR_L,
+            .weight_fx = ttak_fx_from_float(random_weight),
+            .synaptic_strength_fx = TTAK_FX_ONE,
+            .neurotransmitter_type_fx = ttak_fx_from_float(-1.0f),
+            .eligibility_trace_fx = 0,
+            .type = SYNAPSE_TYPE_NORMAL};
+        neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+            .from = i,
+            .to = MOTOR_R,
+            .weight_fx = ttak_fx_from_float(random_weight),
+            .synaptic_strength_fx = TTAK_FX_ONE,
+            .neurotransmitter_type_fx = ttak_fx_from_float(-1.0f),
+            .eligibility_trace_fx = 0,
+            .type = SYNAPSE_TYPE_NORMAL};
     }
     
     // 5. Antagonistic connections between motor neurons
-    neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){MOTOR_L, MOTOR_R, -0.5f, 1.0f, -1.0f, SYNAPSE_TYPE_ANTAGONISTIC};
-    neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){MOTOR_R, MOTOR_L, -0.5f, 1.0f, -1.0f, SYNAPSE_TYPE_ANTAGONISTIC};
+    neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+        .from = MOTOR_L,
+        .to = MOTOR_R,
+        .weight_fx = ttak_fx_from_float(-0.5f),
+        .synaptic_strength_fx = TTAK_FX_ONE,
+        .neurotransmitter_type_fx = ttak_fx_from_float(-1.0f),
+        .eligibility_trace_fx = 0,
+        .type = SYNAPSE_TYPE_ANTAGONISTIC};
+    neural_synapses[NUM_SYNAPSES_INIT++] = (Synapse_t){
+        .from = MOTOR_R,
+        .to = MOTOR_L,
+        .weight_fx = ttak_fx_from_float(-0.5f),
+        .synaptic_strength_fx = TTAK_FX_ONE,
+        .neurotransmitter_type_fx = ttak_fx_from_float(-1.0f),
+        .eligibility_trace_fx = 0,
+        .type = SYNAPSE_TYPE_ANTAGONISTIC};
 }
